@@ -17,3 +17,9 @@ variable "env" {
   type = string
   description = "environment where it will be created"
 }
+
+variable "release_version" {
+  type = string
+  description = "Image version which needs to be deployed"
+  default = ""
+}

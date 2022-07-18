@@ -23,6 +23,63 @@ resource "aws_ecs_cluster" "app_cluster" {
   }
 }
 
+resource "aws_ecs_task_definition" "app_task_defination" {
+  count = var.release_version != "" ? 1 : 0
+  family = "app_task_defination"
+  execution_role_arn = aws_iam_role.app_task_execution_role.arn
+  container_definitions = jsonencode([
+    {
+      name      = "web"
+      image     = "${aws_ecr_repository.app_repository.repository_url}:${var.release_version}"
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = 3000
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+          options = {
+            awslogs-create-group =  "true",
+            awslogs-group         = "app-logs"
+            awslogs-stream-prefix = "ecs"
+            awslogs-region        = var.region
+          }
+        }
+    }
+  ])
+
+  requires_compatibilities = [
+    "FARGATE"
+  ]
+
+  network_mode = "awsvpc"
+  cpu          = "256"
+  memory       = "512"
+}
+
+resource "aws_ecs_service" "app_service" {
+  count = var.release_version != "" ? 1 : 0
+  name            = "app_service"
+  cluster         = aws_ecs_cluster.app_cluster.id
+  task_definition = aws_ecs_task_definition.app_task_defination[0].arn
+  desired_count   = 2
+  launch_type     = "FARGATE"
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.app_lb_tg.arn
+    container_name   = jsondecode(aws_ecs_task_definition.app_task_defination[0].container_definitions)[0].name
+    container_port   = 3000
+  }
+
+  network_configuration {
+    subnets          = module.vpc.subnet_ids
+    assign_public_ip = true
+    security_groups  = [aws_security_group.ecs_container.id]
+  }
+}
+
 resource "aws_security_group" "ecs_container" {
   name        = "ecs-container"
   description = "Allow http inbound traffic"
