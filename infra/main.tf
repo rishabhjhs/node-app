@@ -22,3 +22,29 @@ resource "aws_ecs_cluster" "app_cluster" {
     value = "enabled"
   }
 }
+
+resource "aws_security_group" "ecs_container" {
+  name        = "ecs-container"
+  description = "Allow http inbound traffic"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description     = "HTTP from app load balancer"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    security_groups = [aws_security_group.allow_http_lb.id]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = "ecs-container"
+  }
+}
