@@ -1,8 +1,8 @@
 resource "aws_lb" "app_load_balancer" {
-  name = "app_lb"
+  name = "applb"
   internal = false
   load_balancer_type = "application"
-  subnet = module.vpc.subnet_ids
+  subnets = module.vpc.subnet_ids
   security_groups = [aws_security_group.allow_http_lb.id]
   enable_deletion_protection = false
 }
