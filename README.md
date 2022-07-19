@@ -1,6 +1,11 @@
 ## Setup
 
-1. Go to the `infra directory` in project.
+1. Go to the `remote_state directory` in project.
+```bash
+cd infra/remote_state; terraform init; terraform apply
+```
+
+2. Go to the `infra directory` in project.
 ```bash
 cd infra; terraform init; terraform apply
 ```
