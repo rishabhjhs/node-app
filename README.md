@@ -5,6 +5,7 @@
 cd infra/remote_state; terraform init; terraform apply
 ```
 
+
 2. Go to the `infra directory` in project.
 ```bash
 cd infra; terraform init; terraform apply
